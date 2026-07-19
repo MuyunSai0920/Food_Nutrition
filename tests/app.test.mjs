@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 async function render() {
@@ -21,4 +22,8 @@ test("renders the BiteLog nutrition tracker", async () => {
   assert.match(html, /Local nutrition tracker/);
   assert.match(html, /Scan your meal/);
   assert.doesNotMatch(html, /Your site is taking shape|Building your site/);
+
+  const pageSource = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
+  assert.match(pageSource, /USDA FoodData Central/);
+  assert.match(pageSource, /fdcId: 171688/);
 });

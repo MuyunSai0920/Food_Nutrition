@@ -22,6 +22,12 @@ To identify food directly from image pixels, replace the keyword matching in `sc
 
 A single ordinary photo cannot measure food precisely. A production implementation should use reference objects, multiple viewing angles, and a user confirmation step for portion weights.
 
+## Nutrition data
+
+The included food library uses USDA FoodData Central SR Legacy records (April 2018). Each entry stores its FDC ID, official food description, and per-100 g values for carbohydrate, protein, fat, and energy. In the app, select **Food library** and use the FDC ID link on any entry to inspect the official USDA record.
+
+Suggested citation: U.S. Department of Agriculture, Agricultural Research Service. FoodData Central. https://fdc.nal.usda.gov/
+
 ## Run locally
 
 ### Requirements
