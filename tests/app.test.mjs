@@ -25,5 +25,7 @@ test("renders the BiteLog nutrition tracker", async () => {
 
   const pageSource = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
   assert.match(pageSource, /USDA FoodData Central/);
-  assert.match(pageSource, /fdcId: 171688/);
+  assert.match(pageSource, /Fruit\|apple\|Apple, Raw, With Skin\|apple\|171688/);
+  assert.match(pageSource, /const FOOD_CATEGORIES/);
+  assert.match(pageSource, /egg: \{ label: "egg", grams: 50 \}/);
 });
