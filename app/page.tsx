@@ -7,6 +7,7 @@ type UnitPortion = { label: string; grams: number };
 type Food = Nutrients & { id: string; name: string; category: string; aliases: string[]; fdcId: number; kcal: number; portion?: UnitPortion };
 type MealItem = Food & { rowId: string; grams: number };
 type DayRecord = { id: string; date: string; createdAt: string; items: MealItem[] };
+type VisionDetection = { foodName: string; grams: number };
 
 const FOOD_ROWS = `
 Fruit|apple|Apple, Raw, With Skin|apple|171688|13.8|0.26|0.17|52
@@ -171,6 +172,36 @@ const itemNutrients = (item: MealItem) => ({ carbs: round((item.carbs * item.gra
 const itemEnergy = (item: MealItem) => round((energyPer100(item) * item.grams) / 100);
 const today = () => new Date().toLocaleDateString("en-CA");
 
+function normalizeText(value: string) { return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(); }
+function findFoodFromVision(name: string) {
+  const needle = normalizeText(name);
+  const ranked = FOODS.map((food) => {
+    const names = [food.name, ...food.aliases].map(normalizeText);
+    const score = Math.max(...names.map((candidate) => candidate === needle ? 100 : candidate.includes(needle) || needle.includes(candidate) ? 70 : 0));
+    return { food, score };
+  }).filter((candidate) => candidate.score > 0).sort((a, b) => b.score - a.score);
+  return ranked[0]?.food;
+}
+async function imageToBase64(file: File) {
+  const dataUrl = await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = () => reject(reader.error); reader.readAsDataURL(file); });
+  const encoded = dataUrl.split(",")[1];
+  if (!encoded) throw new Error("The selected image could not be read.");
+  return encoded;
+}
+function parseVisionDetections(content: string): VisionDetection[] {
+  const candidate = content.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1] ?? content.match(/\{[\s\S]*\}/)?.[0];
+  if (!candidate) throw new Error("The local model did not return a readable result.");
+  const parsed: unknown = JSON.parse(candidate);
+  const entries = Array.isArray(parsed) ? parsed : parsed && typeof parsed === "object" && Array.isArray((parsed as { foods?: unknown }).foods) ? (parsed as { foods: unknown[] }).foods : [];
+  return entries.flatMap((entry) => {
+    if (!entry || typeof entry !== "object") return [];
+    const value = entry as { foodName?: unknown; grams?: unknown };
+    const foodName = typeof value.foodName === "string" ? value.foodName : "";
+    const grams = Number(value.grams);
+    return foodName && Number.isFinite(grams) && grams > 0 ? [{ foodName, grams }] : [];
+  });
+}
+
 async function openDb() {
   return new Promise<IDBDatabase>((resolve, reject) => {
     const request = indexedDB.open(dbName, 1);
@@ -213,15 +244,25 @@ export default function Home() {
   const totalEnergy = useMemo(() => round(items.reduce((sum, item) => sum + itemEnergy(item), 0)), [items]);
   const filteredFoods = useMemo(() => FOODS.filter((food) => (category === "All" || food.category === category) && `${food.name}${food.category}${food.aliases.join("")}`.toLowerCase().includes(search.toLowerCase())), [category, search]);
 
-  function scanFile(event: ChangeEvent<HTMLInputElement>) {
+  async function scanFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]; if (!file) return;
-    if (imageUrl) URL.revokeObjectURL(imageUrl); setImageUrl(URL.createObjectURL(file)); setIsScanning(true); setScanMessage("Analyzing image…");
-    window.setTimeout(() => {
-      const found = FOODS.filter((food) => food.aliases.some((alias) => file.name.toLowerCase().includes(alias.toLowerCase())));
-      if (found.length) { setItems(found.map((food) => foodToMeal(food))); setScanMessage(`Found ${found.map((food) => food.name).join(", ")}. Please confirm the portions.`); }
-      else { setItems([]); setScanMessage("The local food library could not identify this image. Add food below, or rename the image with an English food name and upload it again."); }
-      setIsScanning(false);
-    }, 650);
+    if (imageUrl) URL.revokeObjectURL(imageUrl); setImageUrl(URL.createObjectURL(file)); setIsScanning(true); setScanMessage("Analyzing this photo locally with LLaVA…");
+    try {
+      const image = await imageToBase64(file);
+      const availableFoods = FOODS.map((food) => food.name).join("; ");
+      const response = await fetch("http://127.0.0.1:11434/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "llava", stream: false, format: "json", messages: [{ role: "user", content: `Analyze this meal photo. Identify each visible food and estimate its edible weight in grams. Use only the closest exact food names from this allowed list: ${availableFoods}. Return only valid JSON in this format: {"foods":[{"foodName":"exact allowed food name","grams":number}]}. Use a realistic positive estimate. If no listed food is visible, return {"foods":[]}.`, images: [image] }] }) });
+      if (!response.ok) throw new Error("Local AI could not analyze this photo. Make sure Ollama is open and the LLaVA model is installed, then try again.");
+      const result = await response.json() as { message?: { content?: string } };
+      const detections = parseVisionDetections(result.message?.content ?? "");
+      const merged = new Map<string, { food: Food; grams: number }>();
+      for (const detection of detections) { const food = findFoodFromVision(detection.foodName); if (food) { const current = merged.get(food.id); merged.set(food.id, { food, grams: (current?.grams ?? 0) + detection.grams }); } }
+      const recognized = [...merged.values()];
+      if (!recognized.length) throw new Error("No matching foods were found in the local food library. Add foods manually or try a clearer photo.");
+      setItems(recognized.map(({ food, grams }) => foodToMeal(food, round(grams))));
+      setScanMessage(`Local AI found ${recognized.map(({ food }) => food.name).join(", ")}. The weights are estimates—please confirm them.`);
+    } catch (error) {
+      setItems([]); setScanMessage(error instanceof Error ? error.message : "Local image analysis failed. Please try again.");
+    } finally { setIsScanning(false); }
   }
   function addFood(food: Food) { setItems((current) => [...current, foodToMeal(food)]); setTab("scan"); }
   function updateItem(rowId: string, patch: Partial<MealItem>) { setItems((current) => current.map((item) => item.rowId === rowId ? { ...item, ...patch } : item)); }
@@ -232,7 +273,7 @@ export default function Home() {
     <section className="hero"><div><p className="eyebrow">SMART FOOD LOG</p><h1>See your meal.<br /><em>Know your nutrition.</em></h1><p>Upload a meal photo, confirm food and portions, and get calories with your three key macros.</p></div><div className="hero-orb"><span>4</span><b>kcal / g<br />energy formula</b></div></section>
     <nav className="tabs" aria-label="App navigation"><button className={tab === "scan" ? "active" : ""} onClick={() => setTab("scan")}>⌁ Scan & log</button><button className={tab === "history" ? "active" : ""} onClick={() => setTab("history")}>◷ History</button><button className={tab === "foods" ? "active" : ""} onClick={() => setTab("foods")}>⌕ Food library</button></nav>
     {tab === "scan" && <section className="content-grid">
-      <div className="scan-card card"><div className="section-head"><div><p className="eyebrow">STEP 01</p><h2>Scan your meal</h2></div><label className="date-control">Log date<input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></label></div><input ref={inputRef} className="visually-hidden" type="file" accept="image/*" onChange={scanFile} /><button className={`dropzone ${imageUrl ? "has-image" : ""}`} onClick={() => inputRef.current?.click()} aria-label="Upload a food image">{imageUrl ? <img src={imageUrl} alt="Food to identify" /> : <><span className="upload-icon">⌑</span><strong>Upload a food image</strong><small>JPG, PNG, or HEIC</small></>}{isScanning && <span className="scanning">Scanning</span>}</button><p className="scan-note">{scanMessage}</p><div className="quick-add"><span>Quick add</span>{FOODS.slice(0, 5).map((food) => <button key={food.id} onClick={() => addFood(food)}>+ {food.name}</button>)}</div></div>
+      <div className="scan-card card"><div className="section-head"><div><p className="eyebrow">STEP 01</p><h2>Scan your meal</h2></div><label className="date-control">Log date<input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></label></div><input ref={inputRef} className="visually-hidden" type="file" accept="image/*" onChange={scanFile} /><button className={`dropzone ${imageUrl ? "has-image" : ""}`} onClick={() => inputRef.current?.click()} aria-label="Upload a food image">{imageUrl ? <img src={imageUrl} alt="Food to identify" /> : <><span className="upload-icon">⌑</span><strong>Upload a meal photo</strong><small>Local AI identifies food and estimates grams</small></>}{isScanning && <span className="scanning">Analyzing locally</span>}</button><p className="scan-note">{scanMessage}</p><div className="quick-add"><span>Quick add</span>{FOODS.slice(0, 5).map((food) => <button key={food.id} onClick={() => addFood(food)}>+ {food.name}</button>)}</div></div>
       <aside className="summary-card card"><p className="eyebrow">TODAY&apos;S TOTAL</p><div className="calorie-total"><strong>{totalEnergy}</strong><span>kcal</span></div><p className="summary-subtitle">{items.length} food {items.length === 1 ? "item" : "items"} logged</p><div className="macro-list"><Macro name="Carbs" value={totals.carbs} color="orange" /><Macro name="Protein" value={totals.protein} color="mint" /><Macro name="Fat" value={totals.fat} color="purple" /></div><button className="primary-button" onClick={saveToday}>Save today&apos;s log <span>→</span></button></aside>
       <section className="items-card card wide"><div className="section-head"><div><p className="eyebrow">STEP 02</p><h2>Confirm food & portions</h2></div><span className="hint">Values are editable</span></div>{items.length === 0 ? <div className="empty-state">Upload an image, or add food from the Food library.</div> : <div className="items-table"><div className="table-label"><span>Food</span><span>Portion</span><span>Carbs</span><span>Protein</span><span>Fat</span><span>Calories</span><span /></div>{items.map((item) => { const n = itemNutrients(item); return <div className="food-row" key={item.rowId}><div><strong>{item.name}</strong><small>{item.category}</small></div><div className="weight-controls"><label><input aria-label={`${item.name} weight`} type="number" min="0" value={item.grams} onChange={(e) => updateItem(item.rowId, { grams: Math.max(0, Number(e.target.value)) })}/><span>g</span></label>{item.portion && <label className="portion-input"><input aria-label={`${item.name} quantity`} type="number" min="0" step="0.5" value={round(item.grams / item.portion.grams)} onChange={(e) => updateItem(item.rowId, { grams: Math.max(0, Number(e.target.value)) * item.portion!.grams })}/><span>{item.portion.label}</span></label>}</div><span>{n.carbs}g</span><span>{n.protein}g</span><span>{n.fat}g</span><strong>{itemEnergy(item)}<small> kcal</small></strong><button className="delete" onClick={() => setItems((current) => current.filter((row) => row.rowId !== item.rowId))} aria-label={`Remove ${item.name}`}>×</button></div>; })}</div>}</section>
     </section>}

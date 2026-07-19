@@ -30,4 +30,6 @@ test("renders the BiteLog nutrition tracker", async () => {
   assert.match(pageSource, /Grains & Starches\|mung-bean-noodles\|Mung-Bean Cellophane Noodles, Dry/);
   assert.match(pageSource, /const FOOD_CATEGORIES/);
   assert.match(pageSource, /egg: \{ label: "egg", grams: 50 \}/);
+  assert.match(pageSource, /http:\/\/127\.0\.0\.1:11434\/api\/chat/);
+  assert.match(pageSource, /model: "llava"/);
 });
