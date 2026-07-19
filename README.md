@@ -13,13 +13,16 @@ A self-hostable meal logging web app that stores data in the browser. It does no
 
 ## Recognition behavior
 
-To keep the project usable without an account, secret, or cloud service, the current version matches food keywords in the **image filename**. For example, uploading `chicken_rice.jpg` adds Cooked Chicken Breast and Cooked Rice. All results remain editable.
+The local scanner sends the selected photo only to Ollama running on the same computer. It uses the `llava` vision model to identify foods in the photo, match them to the included food library, and estimate their edible grams. All results remain editable and photos are not sent to a cloud service.
 
-To identify food directly from image pixels, replace the keyword matching in `scanFile` within `app/page.tsx` with a request to a local vision service, such as Ollama with LLaVA or an ONNX food-detection model. The service should return:
+Before using local image recognition, install Ollama and download the model:
 
-```ts
-[{ foodId: "chicken", confidence: 0.93, estimatedGrams: 150 }]
+```bash
+/Applications/Ollama.app/Contents/Resources/ollama serve
+/Applications/Ollama.app/Contents/Resources/ollama pull llava
 ```
+
+The model is approximately 4.7 GB. Keep the Ollama service running while using BiteLog. Weight detection from one photo is an estimate and should always be confirmed.
 
 A single ordinary photo cannot measure food precisely. A production implementation should use reference objects, multiple viewing angles, and a user confirmation step for portion weights.
 
@@ -30,6 +33,10 @@ The included food library uses 143 USDA FoodData Central SR Legacy records (Apri
 Suggested citation: U.S. Department of Agriculture, Agricultural Research Service. FoodData Central. https://fdc.nal.usda.gov/
 
 ## Run locally
+
+### One-click startup on macOS
+
+After installing Node.js and Ollama, double-click `Start BiteLog.command`. The launcher opens Ollama if needed, checks that the `llava` model is available, starts BiteLog, and opens `http://localhost:3030`.
 
 ### Requirements
 
