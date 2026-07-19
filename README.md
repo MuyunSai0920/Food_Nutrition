@@ -6,7 +6,7 @@ A self-hostable meal logging web app that stores data in the browser. It does no
 
 - Upload a meal photo and add recognized foods; food and portion size remain editable.
 - Calculate calories from the USDA energy value for each selected food.
-- Browse 138 included foods across nine categories, with carbohydrates, protein, fat, and calories per 100 g.
+- Browse 143 included foods across nine categories, with carbohydrates, protein, fat, and calories per 100 g.
 - Use count-based portions for foods with an official discrete USDA portion, such as `1 egg`, `1 medium apple`, or `1 slice` of bread; grams remain editable for every food.
 - Save daily meal records in browser IndexedDB and review them by date.
 - Use the responsive interface on desktop or mobile.
@@ -25,7 +25,7 @@ A single ordinary photo cannot measure food precisely. A production implementati
 
 ## Nutrition data
 
-The included food library uses 138 USDA FoodData Central SR Legacy records (April 2018). Each entry stores its FDC ID and per-100 g values for carbohydrate, protein, fat, and energy. Count-based portions use the gram weights from the matching USDA food-portion records. In the app, select **Food library** and use the FDC ID link on any entry to inspect the official USDA record.
+The included food library uses 143 USDA FoodData Central SR Legacy records (April 2018). Each entry stores its FDC ID and per-100 g values for carbohydrate, protein, fat, and energy. Count-based portions use the gram weights from the matching USDA food-portion records. In the app, select **Food library** and use the FDC ID link on any entry to inspect the official USDA record.
 
 Suggested citation: U.S. Department of Agriculture, Agricultural Research Service. FoodData Central. https://fdc.nal.usda.gov/
 

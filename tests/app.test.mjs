@@ -26,6 +26,8 @@ test("renders the BiteLog nutrition tracker", async () => {
   const pageSource = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
   assert.match(pageSource, /USDA FoodData Central/);
   assert.match(pageSource, /Fruit\|apple\|Apple, Raw, With Skin\|apple\|171688/);
+  assert.match(pageSource, /Meat & Poultry\|raw-chicken-breast\|Chicken Breast, Raw\|raw chicken,chicken breast\|171077/);
+  assert.match(pageSource, /Grains & Starches\|mung-bean-noodles\|Mung-Bean Cellophane Noodles, Dry/);
   assert.match(pageSource, /const FOOD_CATEGORIES/);
   assert.match(pageSource, /egg: \{ label: "egg", grams: 50 \}/);
 });

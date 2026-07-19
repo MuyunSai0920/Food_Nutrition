@@ -51,6 +51,7 @@ Vegetables|sweet-potato|Sweet Potato, Raw|sweet potato,sweet potatoes|168482|20.
 Vegetables|potato|Potato, Raw|potato,potatoes|170026|17.5|2.05|0.09|77
 Vegetables|cabbage|Cabbage, Raw|cabbage|169975|5.8|1.28|0.1|25
 Vegetables|celery|Celery, Raw|celery|169988|2.97|0.69|0.17|14
+Vegetables|celtuce|Celtuce, Raw|celtuce,stem lettuce|169990|3.65|0.85|0.3|18
 Vegetables|beet|Beets, Raw|beet,beets|169145|9.56|1.61|0.17|43
 Vegetables|brussels-sprouts|Brussels Sprouts, Raw|brussels sprouts|170383|8.95|3.38|0.3|43
 Vegetables|eggplant|Eggplant, Raw|eggplant|169228|5.88|0.98|0.18|25
@@ -71,6 +72,7 @@ Grains & Starches|pasta|Pasta, Cooked|pasta|168928|30.9|5.8|0.93|158
 Grains & Starches|whole-wheat-pasta|Whole-Wheat Pasta, Cooked|whole wheat pasta|168910|30.1|5.99|1.71|149
 Grains & Starches|egg-noodles|Egg Noodles, Cooked|egg noodles,noodles|168919|25.2|4.54|2.07|138
 Grains & Starches|rice-noodles|Rice Noodles, Cooked|rice noodles|168914|24|1.79|0.2|108
+Grains & Starches|mung-bean-noodles|Mung-Bean Cellophane Noodles, Dry|glass noodles,cellophane noodles,mung bean noodles,long rice|174258|86.1|0.16|0.06|351
 Grains & Starches|white-bread|White Bread|white bread,bread|174924|49.4|8.85|3.33|266
 Grains & Starches|whole-wheat-bread|Whole-Wheat Bread|whole wheat bread,bread|172688|42.7|12.4|3.5|252
 Grains & Starches|rye-bread|Rye Bread|rye bread|172684|48.3|8.5|3.3|259
@@ -82,10 +84,12 @@ Grains & Starches|corn-tortilla|Corn Tortilla|corn tortilla,tortilla|175036|44.6
 Grains & Starches|baked-sweet-potato|Sweet Potato, Baked|baked sweet potato|168483|20.7|2.01|0.15|90
 Grains & Starches|chow-mein-noodles|Chinese Chow Mein Noodles|chow mein,chinese noodles|168905|63.6|10.9|21.2|471
 Meat & Poultry|chicken-breast|Chicken Breast, Roasted|chicken,chicken breast|171477|0|31|3.57|165
+Meat & Poultry|raw-chicken-breast|Chicken Breast, Raw|raw chicken,chicken breast|171077|0|22.5|2.62|120
 Meat & Poultry|chicken-thigh|Chicken Thigh, Roasted|chicken thigh|172388|0|24.8|8.15|179
 Meat & Poultry|turkey-breast|Turkey Breast, Roasted|turkey,turkey breast|171492|0|28.7|7.41|189
 Meat & Poultry|lean-ground-beef|Lean Ground Beef, Cooked|ground beef,beef|171793|0|25.2|10.7|204
 Meat & Poultry|beef-steak|Beef Steak, Grilled|beef steak,steak|168632|0|29.5|8.41|202
+Meat & Poultry|raw-beef-steak|Beef Flank Steak, Raw, Lean|raw beef,beef steak|168609|0|21.7|6.29|149
 Meat & Poultry|pork-loin|Pork Loin, Broiled|pork loin,pork|168368|0|27.6|4.41|158
 Meat & Poultry|pork-belly|Pork Belly, Raw|pork belly|167812|0|9.34|53|518
 Meat & Poultry|ground-pork|Ground Pork, Cooked|ground pork,pork|168374|0|27.1|21.4|301
@@ -98,6 +102,7 @@ Seafood|farm-salmon|Atlantic Salmon, Farmed, Raw|salmon|175167|0|20.4|13.4|208
 Seafood|wild-salmon|Atlantic Salmon, Wild, Cooked|wild salmon,salmon|171998|0|25.4|8.13|182
 Seafood|tuna|Light Tuna, Canned In Water|tuna|171986|0|25.5|0.82|116
 Seafood|cod|Pacific Cod, Cooked|cod|171990|0|18.7|0.5|85
+Seafood|raw-shrimp|Shrimp, Raw|raw shrimp,shrimp,prawn|175179|0|20.1|0.51|85
 Seafood|shrimp|Shrimp, Cooked|shrimp,prawn|175180|0.2|24|0.28|99
 Seafood|crab|Blue Crab, Cooked|crab|174205|0|17.9|0.74|83
 Seafood|scallops|Scallops, Steamed|scallop,scallops|167742|5.41|20.5|0.84|111
