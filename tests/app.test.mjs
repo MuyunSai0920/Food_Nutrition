@@ -12,13 +12,13 @@ async function render() {
   );
 }
 
-test("renders the food nutrition tracker", async () => {
+test("renders the BiteLog nutrition tracker", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   const html = await response.text();
-  assert.match(html, /食刻/);
-  assert.match(html, /本地营养记录/);
-  assert.match(html, /扫描你的餐盘/);
+  assert.match(html, /BiteLog/);
+  assert.match(html, /Local nutrition tracker/);
+  assert.match(html, /Scan your meal/);
   assert.doesNotMatch(html, /Your site is taking shape|Building your site/);
 });

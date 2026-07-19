@@ -1,80 +1,80 @@
-# 食刻 / Shike Local Nutrition
+# BiteLog / Local Nutrition Tracker
 
-一个可以自行部署的中文饮食记录 Web 应用。它在浏览器中保存数据，不需要账户、数据库或 API Key。
+A self-hostable meal logging web app that stores data in the browser. It does not require an account, database, or API key.
 
-## 功能
+## Features
 
-- 上传餐盘图片并添加识别结果；重量与食物均可人工确认和修改。
-- 依据 `碳水 × 4 + 蛋白质 × 4 + 脂肪 × 9` 计算热量。
-- 查询内置食物库中每 100g 的碳水、蛋白质、脂肪与热量。
-- 将每日饮食记录保存在浏览器 IndexedDB，并按日期查看历史记录。
-- 响应式界面，手机和电脑均可使用。
+- Upload a meal photo and add recognized foods; food and portion size remain editable.
+- Calculate calories with `carbs × 4 + protein × 4 + fat × 9`.
+- Browse an included food library with carbohydrates, protein, fat, and calories per 100 g.
+- Save daily meal records in browser IndexedDB and review them by date.
+- Use the responsive interface on desktop or mobile.
 
-## 识别能力说明
+## Recognition behavior
 
-为了让项目无需账号、密钥和云服务即可运行，当前版本使用图片**文件名**匹配内置食物关键词。例如上传 `鸡胸肉_米饭.jpg` 会添加“鸡胸肉（熟）”和“米饭（熟）”。识别结果始终可以编辑。
+To keep the project usable without an account, secret, or cloud service, the current version matches food keywords in the **image filename**. For example, uploading `chicken_rice.jpg` adds Cooked Chicken Breast and Cooked Rice. All results remain editable.
 
-如需从图片像素中识别食物，可在 [`app/page.tsx`](app/page.tsx) 的 `scanFile` 函数中，将关键词匹配替换为调用本地视觉服务的请求，例如 Ollama + LLaVA 或 ONNX 食物检测模型。建议让服务返回：
+To identify food directly from image pixels, replace the keyword matching in `scanFile` within `app/page.tsx` with a request to a local vision service, such as Ollama with LLaVA or an ONNX food-detection model. The service should return:
 
 ```ts
 [{ foodId: "chicken", confidence: 0.93, estimatedGrams: 150 }]
 ```
 
-单张普通图片无法精确称重；生产版本应使用参照物、多角度图像，并保留用户确认重量的步骤。
+A single ordinary photo cannot measure food precisely. A production implementation should use reference objects, multiple viewing angles, and a user confirmation step for portion weights.
 
-## 本地运行
+## Run locally
 
-### 环境要求
+### Requirements
 
-- Node.js 22 或更高版本
-- pnpm 10 或更高版本（可通过 `corepack enable` 启用）
+- Node.js 22 or later
+- pnpm 10 or later (enable it with `corepack enable` if needed)
 
-### 启动
+### Start development mode
 
 ```bash
 pnpm install
 pnpm run dev
 ```
 
-打开命令行打印的 `http://localhost:xxxx` 地址。
+Open the `http://localhost:xxxx` address printed in the terminal.
 
-### 生产模式预览
+### Preview the production build
 
 ```bash
 pnpm run build
 pnpm run start
 ```
 
-## 部署到 Cloudflare Workers
+## Deploy to Cloudflare Workers
 
-这是项目原生支持的部署方式。先注册 Cloudflare 账户，然后在项目目录运行：
+This project natively supports Cloudflare Workers. Create a Cloudflare account, then run the following in the project directory:
 
 ```bash
 pnpm exec wrangler login
 pnpm run deploy
 ```
 
-首次部署会要求授权 Cloudflare，并创建名为 `shike-local-nutrition` 的 Worker。完成后，终端会输出公网 URL。
+The first deployment authorizes Cloudflare and creates the `shike-local-nutrition` Worker. The terminal prints a public URL when deployment is complete.
 
-本应用的饮食记录使用访问者自己的浏览器 IndexedDB 保存。因此即使部署到公网，也不会把图片或饮食记录上传到服务器；清除浏览器网站数据会同时清除记录。
+Meal records remain in each visitor's browser IndexedDB. Deploying the app does not upload meal photos or records to the server; clearing website data in the browser also clears those local records.
 
-## 上传到 GitHub
+## Publish to GitHub
 
-1. 在 GitHub 新建一个空仓库，例如 `shike-local-nutrition`；不要勾选 README、`.gitignore` 或 License。
-2. 在此项目目录运行以下命令，并将 `<你的仓库地址>` 换成 GitHub 的 HTTPS 或 SSH 地址：
+1. Create an empty GitHub repository, such as `shike-local-nutrition`. Do not initialize it with a README, `.gitignore`, or license.
+2. Run the following commands in this directory and replace `<your-repository-url>` with its GitHub HTTPS or SSH address:
 
 ```bash
 git init
 git add .
 git commit -m "feat: add local nutrition tracker"
 git branch -M main
-git remote add origin <你的仓库地址>
+git remote add origin <your-repository-url>
 git push -u origin main
 ```
 
-`.gitignore` 已排除依赖、构建产物、开发日志和环境变量。不要把 `.env`、Cloudflare token 或任何 API Key 提交到仓库。
+The included `.gitignore` excludes dependencies, build output, development logs, and environment files. Never commit `.env` files, Cloudflare tokens, or API keys.
 
-## 校验命令
+## Validation commands
 
 ```bash
 pnpm run build
@@ -82,9 +82,9 @@ pnpm test
 pnpm run lint
 ```
 
-## 技术栈
+## Technology
 
-- React 19 + TypeScript
-- Vinext / Vite
-- Cloudflare Workers（可选部署目标）
-- IndexedDB（浏览器本地持久化）
+- React 19 and TypeScript
+- Vinext and Vite
+- Cloudflare Workers (optional deployment target)
+- IndexedDB (browser-local persistence)
